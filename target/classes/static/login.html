@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 100px;
+        }
+        form {
+            display: inline-block;
+            text-align: left;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 250px;
+            padding: 10px;
+            margin: 5px 0;
+            display: block;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #28a745;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+        a {
+            display: block;
+            margin-top: 15px;
+        }
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<h2>Login</h2>
+<form id="loginForm">
+    <label for="username">Username:</label>
+    <input type="text" name="username" id="username" required>
+
+    <label for="password">Password:</label>
+    <input type="password" name="password" id="password" required>
+
+    <input type="submit" value="Login">
+</form>
+
+<div class="message" id="messageBox"></div>
+<a href="/">Back to Home</a>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const formData = new FormData(form);
+
+        const response = await fetch('api/v1/doLogin', {
+            method: 'POST',
+            body: formData
+        });
+
+        const resultText = await response.text();
+        const messageBox = document.getElementById('messageBox');
+
+        if (resultText.toLowerCase().includes("success")) {
+            // Redirect to home page after success
+            window.location.href = "/home.html"; // or whatever your home route is
+        } else {
+            messageBox.style.color = 'red';
+            messageBox.textContent = resultText;
+        }
+
+    });
+</script>
+</body>
+</html>

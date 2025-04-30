@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        table {
+            margin: auto;
+            border-collapse: collapse;
+            width: 80%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        button {
+            margin: 0 5px;
+            padding: 5px 10px;
+        }
+        #addStudentForm {
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            align-items: center;
+        }
+        input[type="text"] {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<h2>Welcome to the Student Management Dashboard</h2>
+
+<form id="addStudentForm">
+    <h3>Add New Student</h3>
+    <input type="text" name="name" placeholder="Name" required>
+    <input type="text" name="surname" placeholder="SurName" required>
+    <input type="text" name="age" placeholder="Age" required>
+    <input type="text" name="gender" placeholder="Gender" required>
+    <input type="text" name="class" placeholder="Class" required>
+    <input type="text" name="address1" placeholder="Address1" required>
+    <input type="text" name="address2" placeholder="Address2">
+    <button type="submit">Add Student</button>
+</form>
+
+<h3>All Students</h3>
+<table id="studentsTable">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Gender</th>
+        <th>Class</th>
+        <th>Address1</th>
+        <th>Address2</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Students will be loaded here -->
+    </tbody>
+</table>
+
+<script>
+    const API_BASE = 'api/v1';
+
+    async function fetchStudents() {
+        const res = await fetch(`${API_BASE}/getAllStudents`);
+        const students = await res.json();
+        renderStudents(students);
+    }
+
+    function renderStudents(students) {
+        const tbody = document.querySelector("#studentsTable tbody");
+        tbody.innerHTML = '';
+        students.forEach(student => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${student.name + " " + student.surname}</td>
+                <td>${student.age}</td>
+                <td>${student.gender}</td>
+                <td>${student.study}</td>
+                <td>${student.address1}</td>
+                <td>${student.address2}</td>
+                <td>
+                    <button onclick="editStudent(${student.id}, '${student.name}', '${student.surname}', '${student.age}', '${student.gender}', '${student.study}', '${student.address1}', '${student.address2}')">Edit</button>
+                    <button onclick="deleteStudent(${student.id})">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    document.getElementById('addStudentForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const form = e.target;
+        const student = {
+            name: form.name.value,
+            surname: form.surname.value,
+            age: form.age.value,
+            gender: form.gender.value,
+            study: form.class.value,
+            address1: form.address1.value,
+            address2: form.address2.value
+        };
+
+        await fetch(`${API_BASE}/saveStudent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(student)
+        });
+
+        form.reset();
+        fetchStudents(); // Refresh table
+    });
+
+    async function deleteStudent(id) {
+        await fetch(`${API_BASE}/deleteStudent/${id}`, {
+            method: 'GET'
+        });
+        fetchStudents();
+    }
+
+    async function editStudent(id, name, surname, age, gender, study, address1, address2) {
+        const newName = prompt("Edit name:", name);
+        const newSurname = prompt("Edit surname:", surname);
+        const newAge = prompt("Edit age:", age);
+        const newGender = prompt("Edit gender:", gender);
+        const newStudy = prompt("Edit class:", study);
+        const newAddress1 = prompt("Edit Address1:", address1);
+        const newAddress2 = prompt("Edit Address2:", address2);
+
+        if (newName && newSurname && newAge && newGender && newStudy && newAddress1) {
+            await fetch(`${API_BASE}/saveStudent`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: id,
+                    name: newName,
+                    surname: newSurname,
+                    age: newAge,
+                    gender: newGender,
+                    study: newStudy,
+                    address1: newAddress1,
+                    address2: newAddress2
+                })
+            });
+            fetchStudents();
+        }
+    }
+
+    // Load students on page load
+    fetchStudents();
+</script>
+</body>
+</html>
